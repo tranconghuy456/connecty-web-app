@@ -1,0 +1,8 @@
+.glass {
+  border-radius: 16px;
+  box-shadow: 0 4px 30px #4747470b;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+
+  @apply border-2 border-teal-200/40 bg-teal-500/20 rounded-3xl h-auto w-[40%] min-w-max p-12 pb-8 lg:w-[40%] md:w-[60%] sm:w-[100%] xs:w-[100%];
+}

@@ -33,7 +33,7 @@ export const signRefreshToken = async (userId) => {
       ENV.REFRESH_TOKEN_PRIVATE_KEY,
       options,
       (error, token) => {
-        if (error) reject(error);
+        if (error) reject(null);
         resolve(token);
       }
     );
@@ -57,9 +57,23 @@ export const verifyRefreshToken = async (refreshToken) => {
     jwt.verify(
       refreshToken,
       ENV.REFRESH_TOKEN_PRIVATE_KEY,
-      (error, payload) => {
-        if (error) reject(error);
-        resolve(payload);
+     async (error, payload) => {
+        switch (error?.name) {
+          case "JsonWebTokenError":
+            // JWT verify error
+            reject(new Error({error: true, message: "Invalid token."}));
+          case "TokenExpiredError":
+            // JWT expired
+            // Re-generate refresh token
+            const user = await UserTokenModel.find(person => person.token === refreshToken);
+            if (!user) reject(null);
+            const RT = await signRefreshToken(user.userId);
+            await UserTokenModel.findOneAndUpdate({userId: user.userId}, {
+              expiresIn: ENV.REFRESH_TOKEN_EXP,
+              token: RT
+            });
+            break;
+        }
       }
     );
   });

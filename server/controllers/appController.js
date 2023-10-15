@@ -83,7 +83,7 @@ export async function login(req, res) {
       // generate access token, refresh token
       let accessToken = await signAccessToken(user._id.toHexString());
       let refreshToken = await signRefreshToken(user._id.toHexString());
-
+        console.log(accessToken);
       res.cookie("RT", refreshToken, {
         httpOnly: true,
         maxAge: 24 * 60 * 1000,
@@ -145,8 +145,8 @@ export async function verifyToken(req, res, next) {
       });
     const token = req.headers["authorization"].split(" ")[1];
     // verify token
-    jwt.verify(token, ENV.ACCESS_TOKEN_PRIVATE_KEY, (error, payload) => {
-      switch (error.name) {
+    jwt.verify(token, ENV.ACCESS_TOKEN_PRIVATE_KEY, async (error, payload) => {
+      switch (error?.name) {
         case "JsonWebTokenError":
           // JWT verify error
           return res.status(401).json({
@@ -157,11 +157,14 @@ export async function verifyToken(req, res, next) {
         case "TokenExpiredError":
           // JWT expired
           // Re-generate access token
-          res.send(req.cookies);
+          
+          break;
       }
-
-      // next();
+      const refreshToken = req.cookies["RT"];
+      const verifyRT = await verifyRefreshToken(refreshToken);
+        
     });
+    next();
   } catch (error) {
     // verify token failed
     return res.status(500).json({

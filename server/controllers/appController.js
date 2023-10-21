@@ -1,12 +1,8 @@
-import { UserModel, UserTokenModel } from "../models/User.model.js";
+import { UserModel } from "../models/User.model";
 import bcrypt from "bcrypt";
 import ENV from "../config.js";
-import {
-  signAccessToken,
-  signRefreshToken,
-  verifyRefreshToken,
-} from "../utils/useToken.js";
 import jwt from "jsonwebtoken";
+import { signAccessToken } from "../utils/useToken";
 
 // POST: localhost:8080/api/register
 // params: {firstname, lastname, birthday, email, password, role, isActived, createdAt, job, updatedAt, phone}
@@ -63,49 +59,6 @@ export async function register(req, res) {
   }
 }
 
-// POST: localhost: 8080/api/login
-// params: {email, password}
-export async function login(req, res) {
-  try {
-    const { email, password } = req.body;
-    // select password field
-    let user = await UserModel.findOne({ email });
-
-    // check compared password
-    bcrypt.compare(password, user.password).then(async (result) => {
-      // if not match
-      if (!result)
-        return res.status(401).json({
-          error: true,
-          message: "Email or Password is incorrect.",
-          data: password,
-        });
-      // generate access token, refresh token
-      let accessToken = await signAccessToken(user._id.toHexString());
-      let refreshToken = await signRefreshToken(user._id.toHexString());
-        console.log(accessToken);
-      res.cookie("RT", refreshToken, {
-        httpOnly: true,
-        maxAge: 24 * 60 * 1000,
-      });
-      return res.status(201).json({
-        error: false,
-        message: "Login successfully.",
-        data: {
-          accessToken: accessToken,
-        },
-      });
-    });
-  } catch (error) {
-    // login failed
-    return res.status(500).json({
-      error: true,
-      message: "Something went wrong.",
-      data: error,
-    });
-  }
-}
-
 // Middleware for verify user
 // POST || GET: localhost:8080/api/verifyUser
 // params: {email}
@@ -133,22 +86,23 @@ export async function verifyUser(req, res, next) {
     });
   }
 }
-
-// Middleware for verify access token
-export async function verifyToken(req, res, next) {
+// Middleware for verify token
+// POST || GET: localhost:8080/api/refresh
+export async function verifyToken(req, res) {
   try {
-    if (!req.headers["authorization"])
+    if (!req.headers["authoriztion"])
       return res.status(501).json({
         error: true,
         message: "Missing header query.",
         data: req.header,
       });
+    // get token from header
     const token = req.headers["authorization"].split(" ")[1];
     // verify token
     jwt.verify(token, ENV.ACCESS_TOKEN_PRIVATE_KEY, async (error, payload) => {
       switch (error?.name) {
         case "JsonWebTokenError":
-          // JWT verify error
+          //   JWT verify error
           return res.status(401).json({
             error: true,
             message: "Unauthorized.",
@@ -157,14 +111,12 @@ export async function verifyToken(req, res, next) {
         case "TokenExpiredError":
           // JWT expired
           // Re-generate access token
-          
+          const accessToken = await signAccessToken(
+            req.cookies["refreshToken"]
+          );
           break;
       }
-      const refreshToken = req.cookies["RT"];
-      const verifyRT = await verifyRefreshToken(refreshToken);
-        
     });
-    next();
   } catch (error) {
     // verify token failed
     return res.status(500).json({

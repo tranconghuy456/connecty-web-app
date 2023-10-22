@@ -3,21 +3,29 @@ import ENV from "../config.js";
 import { UserTokenModel } from "../models/User.model.js";
 
 // sign access token
-export const signAccessToken = async (userId) => {
-  return new Promise((resolve, reject) => {
-    const payload = {
-      userId,
-    };
-    const options = {
-      expiresIn: ENV.ACCESS_TOKEN_EXP,
-    };
-
-    jwt.sign(payload, ENV.ACCESS_TOKEN_PRIVATE_KEY, options, (error, token) => {
-      if (error) reject(error);
-      resolve(token);
-    });
-  });
-};
+export const signAccessToken = async (refreshToken) => {
+    if (refreshToken) {
+      // if has refresh token
+      const payload = {
+        userId: await verifyRefreshToken(refreshToken)
+      }
+      const options = {
+        expiresIn: ENV.ACCESS_TOKEN_EXP,
+      }
+      // create access token
+      jwt.sign(payload, ENV.ACCESS_TOKEN_PRIVATE_KEY, options, (error, token) => {
+        if (error) return {
+          error: true,
+          data: {error}
+        }
+        return token;
+      })
+    } else
+        return {
+          error: true,
+          data: {}
+        }
+}
 
 // sign refresh token
 export const signRefreshToken = async (userId) => {

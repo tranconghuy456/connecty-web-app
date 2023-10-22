@@ -112,7 +112,7 @@ export async function verifyToken(req, res) {
           // JWT expired
           // Re-generate access token
           const accessToken = await signAccessToken(
-            req.cookies["refreshToken"]
+            req.cookies["refreshToken"] || null
           );
           break;
       }

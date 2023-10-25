@@ -1,15 +1,14 @@
-import { UserModel } from "../models/User.model";
+import { UserModel } from "../models/User.model.js";
 import bcrypt from "bcrypt";
 import ENV from "../config.js";
 import jwt from "jsonwebtoken";
-import { signAccessToken } from "../utils/useToken";
+import { signAccessToken, signRefreshToken } from "../utils/useToken.js";
 
 // POST: localhost:8080/api/register
 // params: {firstname, lastname, birthday, email, password, role, isActived, createdAt, job, updatedAt, phone}
 export async function register(req, res) {
   try {
     const { password, email, ...etc } = req.body;
-    console.table(req.body);
     // check user existance
     var isExist = await UserModel.findOne({ email });
     // if exist
@@ -59,6 +58,51 @@ export async function register(req, res) {
   }
 }
 
+// POST: localhost:8080/api/login
+// params: {email, password}
+export async function login(req, res) {
+  try {
+    const { email, password } = req.body;
+    // checkpoint
+    const user = await UserModel.findOne({ email });
+
+    // compared password
+    const comparedPwd = await bcrypt.compare(password, user.password);
+    // if not match
+    if (!comparedPwd)
+      return res.status(401).json({
+        error: true,
+        message: "Email or Password is incorrect.",
+        data: { password },
+      });
+
+    // if match
+    // generate access token
+    let refreshToken = await signRefreshToken(user._id.toHexString());
+    let accessToken = await signAccessToken(refreshToken);
+    // save refresh token in cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 1000,
+    });
+
+    return res.status(201).json({
+      error: false,
+      message: "Login Successfully.",
+      data: {
+        accessToken: accessToken,
+      },
+    });
+  } catch (error) {
+    // login failed
+    return res.status(500).json({
+      error: true,
+      message: "Something went wrong.",
+      data: error,
+    });
+  }
+}
+
 // Middleware for verify user
 // POST || GET: localhost:8080/api/verifyUser
 // params: {email}
@@ -88,9 +132,9 @@ export async function verifyUser(req, res, next) {
 }
 // Middleware for verify token
 // POST || GET: localhost:8080/api/refresh
-export async function verifyToken(req, res) {
+export async function verifyToken(req, res, next) {
   try {
-    if (!req.headers["authoriztion"])
+    if (!req.headers["authorization"])
       return res.status(501).json({
         error: true,
         message: "Missing header query.",
@@ -114,8 +158,15 @@ export async function verifyToken(req, res) {
           const accessToken = await signAccessToken(
             req.cookies["refreshToken"] || null
           );
+          if (!accessToken)
+            return res.status(401).json({
+              error: true,
+              message: "Unauthorized.",
+              data: {},
+            });
           break;
       }
+      next();
     });
   } catch (error) {
     // verify token failed

@@ -4,28 +4,32 @@ import { UserTokenModel } from "../models/User.model.js";
 
 // sign access token
 export const signAccessToken = async (refreshToken) => {
-    if (refreshToken) {
-      // if has refresh token
+  return new Promise(async (resolve, reject) => {
+    if (!refreshToken) throw new Error();
+    try {
+      // if vaild token
       const payload = {
-        userId: await verifyRefreshToken(refreshToken)
-      }
+        userId: await verifyRefreshToken(refreshToken),
+      };
       const options = {
         expiresIn: ENV.ACCESS_TOKEN_EXP,
-      }
-      // create access token
-      jwt.sign(payload, ENV.ACCESS_TOKEN_PRIVATE_KEY, options, (error, token) => {
-        if (error) return {
-          error: true,
-          data: {error}
+      };
+
+      // sign access token
+      jwt.sign(
+        payload,
+        ENV.ACCESS_TOKEN_PRIVATE_KEY,
+        options,
+        (error, token) => {
+          if (error) throw new Error();
+          resolve(token);
         }
-        return token;
-      })
-    } else
-        return {
-          error: true,
-          data: {}
-        }
-}
+      );
+    } catch (error) {
+      throw error;
+    }
+  });
+};
 
 // sign refresh token
 export const signRefreshToken = async (userId) => {
@@ -41,47 +45,60 @@ export const signRefreshToken = async (userId) => {
       ENV.REFRESH_TOKEN_PRIVATE_KEY,
       options,
       (error, token) => {
-        if (error) reject(null);
+        if (error) throw new Error();
         resolve(token);
       }
     );
   });
 };
 
-// userId: {
-//     type: Schema.Types.ObjectId,
-//     required: true,
-//   },
-//   token: { type: String, required: true },
-//   createdAt: {
-//     type: Date,
-//     default: Date.now,
-//     expires: 30 * 86400, // 30 days
-//   },
-
 // verify refresh token
 export const verifyRefreshToken = async (refreshToken) => {
   return new Promise((resolve, reject) => {
+    // verify token
     jwt.verify(
       refreshToken,
       ENV.REFRESH_TOKEN_PRIVATE_KEY,
-     async (error, payload) => {
+      (error, payload) => {
+        // error case
         switch (error?.name) {
           case "JsonWebTokenError":
-            // JWT verify error
-            reject(new Error({error: true, message: "Invalid token."}));
-          case "TokenExpiredError":
-            // JWT expired
-            // Re-generate refresh token
-            const user = await UserTokenModel.find(person => person.token === refreshToken);
-            if (!user) reject(null);
-            const RT = await signRefreshToken(user.userId);
-            await UserTokenModel.findOneAndUpdate({userId: user.userId}, {
-              expiresIn: ENV.REFRESH_TOKEN_EXP,
-              token: RT
+            // verify failed
+            throw new Error({
+              error: true,
+              message: "Invalid token.",
             });
-            break;
+          case "TokenExpiredError":
+            // expired token
+            // re-generate refresh token
+            // checkpoint
+            //     try {
+            //       UserTokenModel.find(
+            //         (person) => person.token === refreshToken
+            //       ).then(async (user) => {
+            //         if (!user) reject(null); // not found
+            //         // re-generate refresh token
+            //         const newRefreshToken = await signRefreshToken(user.userId);
+            //         // update db
+            //         UserTokenModel.findOneAndUpdate(
+            //           { userId: user.userId },
+            //           {
+            //             expiresIn: ENV.REFRESH_TOKEN_EXP,
+            //             token: newRefreshToken,
+            //           },
+            //           (error, doc) => {
+            //             if (error)
+            //               reject(new Error({ error: true, data: { error } }));
+            //             resolve(newRefreshToken);
+            //           }
+            //         );
+            //       });
+            //     } catch (error) {
+            //       reject(new Error({ error: true, data: { error } }));
+            //     }
+            throw new Error();
         }
+        resolve(payload);
       }
     );
   });

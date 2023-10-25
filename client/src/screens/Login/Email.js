@@ -1,18 +1,26 @@
-import React, { useEffect, useState } from "react";
+// MODULES //
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useFormik } from "formik";
 import toast from "react-hot-toast";
 import styles from "../../styles/Login.module.css";
+// COMPONENTS //
 import Input from "../../components/Input";
-import userAvatar from "../../assets/images/user-unknown.png";
 import Loading from "../../components/Loading";
+import ENV from "../../config.js";
+import axios from "../../api/axios";
+import useAuth from "../../hooks/useAuth";
+import { authenticate } from "../../network/helper";
+// ASSETS //
+import userAvatar from "../../assets/images/user-unknown.png";
 
-const Login = () => {
+const Email = () => {
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState({
     state: false,
     message: "",
   });
+  const { setAuth } = useAuth();
 
   const formik = useFormik({
     initialValues: {
@@ -21,10 +29,10 @@ const Login = () => {
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async ({ email }) => {
-      console.log(email);
       try {
-        throw Error;
+        console.log(email);
         setLoading(true);
+        console.log(await authenticate(email));
       } catch (error) {
         toast.error("Something went wrong. Please try again.");
       } finally {
@@ -62,7 +70,12 @@ const Login = () => {
             {/* END HEADER */}
 
             {/* FORM */}
-            <form className="w-100" onSubmit={formik.handleSubmit}>
+            <form
+              className="w-100"
+              onSubmit={(e) => {
+                e.preventDefault();
+                formik.handleSubmit();
+              }}>
               <div className="grid grid-cols-1 mt-6">
                 <Input
                   className="mb-2"
@@ -71,8 +84,8 @@ const Login = () => {
                   inputType="email"
                   error={error.state}
                   isRequired={true}
-                  action={{ ...formik.getFieldProps("email") }}
                   disabled={isLoading}
+                  action={{ ...formik.getFieldProps("email") }}
                 />
                 {error.state ? (
                   <p className="text-red-500">{error.message}</p>
@@ -113,4 +126,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Email;

@@ -10,6 +10,23 @@ import cookieParser from "cookie-parser";
 const app = express();
 
 // middlewares
+// origins to allow
+// const whitelist = ["http://localhost:3000"];
+
+// // app.options("*", cors()); // pre-flight enabled
+// // CORS option
+// const corsOption = {
+//   credential: true,
+//   origin: (origin, callback) => {
+//     if (whitelist.includes(origin)) {
+//       return callback(null, true);
+//     } else {
+//       callback(new Error("Not allowed by CORS."));
+//       console.log("not allowed");
+//     }
+//   },
+// };
+// app.use(cors(corsOption));
 app.use(cors());
 app.use(morgan("tiny"));
 app.disable("x-powered-by");

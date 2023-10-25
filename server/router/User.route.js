@@ -7,6 +7,9 @@ const router = Router();
 // POST METHOD
 router.route("/register").post(controller.register);
 router.route("/login").post(controller.verifyUser, controller.login);
+router
+  .route("/authenticate")
+  .post(controller.verifyUser, (req, res) => res.end()); // authenticate endpoint
 
 // GET METHOD
 router

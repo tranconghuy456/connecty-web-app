@@ -2,9 +2,11 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import "remixicon/fonts/remixicon.css";
-import Login from "../screens/Login";
+import Email from "../screens/Login/Email";
+import Protected from "../components/Protected";
 
 const MainRoute = () => {
+  const isAuth = false;
   return (
     <>
       <Toaster
@@ -16,10 +18,10 @@ const MainRoute = () => {
             color: "#fff",
           },
         }}
-        
       />
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Protected isAuth={isAuth}></Protected>} />
+        <Route path="/login" element={<Email />} />
       </Routes>
     </>
   );

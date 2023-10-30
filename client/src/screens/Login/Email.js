@@ -1,27 +1,28 @@
 // MODULES //
-import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import toast from "react-hot-toast";
 import styles from "../../styles/Login.module.css";
 // COMPONENTS //
 import Input from "../../components/Input";
 import Loading from "../../components/Loading";
-import ENV from "../../config.js";
-import axios from "../../api/axios";
-import useAuth from "../../hooks/useAuth";
+import { useAuthStore } from "../../context/useAuthStore";
 import { authenticate } from "../../network/helper";
 // ASSETS //
 import userAvatar from "../../assets/images/user-unknown.png";
 
 const Email = () => {
-  const [isLoading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false); // loading
   const [error, setError] = useState({
     state: false,
     message: "",
-  });
-  const { setAuth } = useAuth();
+  }); // error state
 
+  const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth); // use setAuth hook
+
+  // Submit handle
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -30,10 +31,19 @@ const Email = () => {
     validateOnChange: false,
     onSubmit: async ({ email }) => {
       try {
-        console.log(email);
         setLoading(true);
-        console.log(await authenticate(email));
+        let response = await authenticate(email);
+        if (response.status === 200) {
+          // if succeed
+          setError({ state: false, message: "" }); // reset error state
+          setAuth(response.data); // create auth context
+          navigate("/verify");
+        } else {
+          // if failed
+          setError({ state: true, message: response.data.message });
+        }
       } catch (error) {
+        setError({ state: true });
         toast.error("Something went wrong. Please try again.");
       } finally {
         setLoading(false);
@@ -88,7 +98,10 @@ const Email = () => {
                   action={{ ...formik.getFieldProps("email") }}
                 />
                 {error.state ? (
-                  <p className="text-red-500">{error.message}</p>
+                  <span className="text-red-500">
+                    <i className="ri-error-warning-line ri-lg mr-1 h-100"></i>
+                    {error.message}
+                  </span>
                 ) : (
                   ""
                 )}
@@ -98,7 +111,7 @@ const Email = () => {
                   Forgot password?{" "}
                   <Link
                     className="underline hover:text-slate-300"
-                    to="/register">
+                    to="/recovery">
                     Recover it.
                   </Link>
                 </p>
@@ -106,7 +119,7 @@ const Email = () => {
                   type="submit"
                   className="rounded-3xl bg-teal-700 mx-auto p-2 w-[160px] block mt-4 text-slate-300 hover:bg-teal-800"
                   disabled={isLoading}>
-                  Login
+                  Verify
                 </button>
               </div>
             </form>

@@ -12,10 +12,10 @@ const UserSchema = new Schema({
     type: String,
     required: true,
   },
-  // birthday: {
-  //   type: Date,
-  //   required: true,
-  // },
+  birthday: {
+    type: Date,
+    required: true,
+  },
   email: {
     type: String,
     required: true,
@@ -24,9 +24,6 @@ const UserSchema = new Schema({
   password: {
     type: String,
     required: true,
-  },
-  avatar: {
-    type: String,
   },
   role: {
     type: String,
@@ -62,12 +59,9 @@ const UserTokenSchema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-  },
-  expires: {
-    type: String,
-    required: true,
+    expires: 30 * 86400, // 30 days
   },
 });
 
-export const UserModel = mongoose.model("Users", UserSchema);
+export const UserModel = mongoose.model("User", UserSchema);
 export const UserTokenModel = mongoose.model("UserToken", UserTokenSchema);

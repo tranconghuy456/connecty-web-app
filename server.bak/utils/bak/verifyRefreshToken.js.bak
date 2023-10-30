@@ -1,0 +1,21 @@
+import { UserTokenModel } from "../models/User.model";
+import jwt from "jsonwebtoken";
+import ENV from "../config.js"
+
+export default verifyRefreshToken = async (refreshToken) {
+    return new Promise((resolve, reject) => {
+        UserTokenModel.findOne({ token: refreshToken }, (error, doc) => {
+            if (!doc) return reject({ error: true, message: "Invalid refresh token." })
+            
+            jwt.verify(refreshToken, ENV.REFRESH_TOKEN_PRIVATE_KEY, (error, tokenDetails) => {
+                if (error) return reject({error: true, message: "Invalid refresh token"})
+                
+                resolve({
+                    tokenDetails, 
+                    error: false,
+                    message: "Valid refresh token."
+                })
+            })
+        })
+    })
+}

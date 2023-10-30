@@ -1,39 +1,53 @@
 // MODULES //
-import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import toast from "react-hot-toast";
 import styles from "../../styles/Login.module.css";
 // COMPONENTS //
 import Input from "../../components/Input";
 import Loading from "../../components/Loading";
-import ENV from "../../config.js";
-import axios from "../../api/axios";
-import useAuth from "../../hooks/useAuth";
-import { authenticate } from "../../network/helper";
+import { login } from "../../network/helper";
 // ASSETS //
-import userAvatar from "../../assets/images/user-unknown.png";
+import { useAuthStore } from "../../context/useAuthStore";
 
-const Email = () => {
-  const [isLoading, setLoading] = useState(false);
+const Password = () => {
+  const navigate = useNavigate();
+  const [isLoading, setLoading] = useState(false); // loading
   const [error, setError] = useState({
     state: false,
     message: "",
-  });
-  const { setAuth } = useAuth();
+  }); // error state
+  const {
+    user: { data },
+  } = useAuthStore((state) => state.auth); // get prev data
 
+  // Submit handle
   const formik = useFormik({
     initialValues: {
-      email: "",
+      password: "",
     },
     validateOnBlur: false,
     validateOnChange: false,
-    onSubmit: async ({ email }) => {
+    onSubmit: async ({ password }) => {
       try {
-        console.log(email);
         setLoading(true);
-        console.log(await authenticate(email));
+        let response = await login(data.email, password);
+        if (response.status === 200) {
+          // if succeed
+          setError({ state: false, message: "" }); // reset error state
+          localStorage.setItem("token", response.data.token); // save token to local storage
+          toast.success(response.data.message);
+        } else if (response.status === 404) {
+          // if not found
+          // show alert
+          window.alert("Unable to authenticate. Please try again :(.");
+          navigate("/login"); // navigate to /login
+        } else {
+          setError({ state: true, message: response.data.message });
+        }
       } catch (error) {
+        setError({ state: true });
         toast.error("Something went wrong. Please try again.");
       } finally {
         setLoading(false);
@@ -51,21 +65,36 @@ const Email = () => {
             {/* HEADER */}
             <header className="">
               <h4 className="text-2xl text-center mb-2 text-slate-200">
-                Welcome to <b className="text-teal-300">Connecty</b>
+                Welcome back <b className="text-teal-300">{data.firstname}</b>
               </h4>
               <p className="text-center text-slate-400">
                 Explore More by
                 <br />
                 connecting with us.
               </p>
-
-              <div className="user-avatar flex justify-center mt-5 ">
+              {data.avatar ? (
+                <div className="user-avatar flex justify-center mt-5 ">
+                  <img
+                    className="rounded-full bg-white/90 h-[96px] w-[96px] drop-shadow-md p-2 border-4 border-teal-800"
+                    alt="user avatar"
+                    src={data.avatar}
+                  />
+                </div>
+              ) : (
+                <div
+                  className="user-avatar flex justify-center mt-5"
+                  id="userAvatar"
+                  data-letters={`
+                  ${data.firstname.charAt(0)}${data.lastname.charAt(0)}
+                `}></div>
+              )}
+              {/* <div className="user-avatar flex justify-center mt-5 ">
                 <img
                   className="rounded-full bg-white/90 h-[96px] w-[96px] drop-shadow-md p-2 border-4 border-teal-800"
                   alt="user avatar"
-                  src={userAvatar}
+                  src={avatar}
                 />
-              </div>
+              </div> */}
             </header>
             {/* END HEADER */}
 
@@ -80,15 +109,18 @@ const Email = () => {
                 <Input
                   className="mb-2"
                   labelText=""
-                  placeholder="user@mail.com"
-                  inputType="email"
+                  placeholder="Password"
+                  inputType="password"
                   error={error.state}
                   isRequired={true}
                   disabled={isLoading}
-                  action={{ ...formik.getFieldProps("email") }}
+                  action={{ ...formik.getFieldProps("password") }}
                 />
                 {error.state ? (
-                  <p className="text-red-500">{error.message}</p>
+                  <span className="text-red-500">
+                    <i className="ri-error-warning-line ri-lg mr-1 h-100"></i>
+                    {error.message}
+                  </span>
                 ) : (
                   ""
                 )}
@@ -98,7 +130,7 @@ const Email = () => {
                   Forgot password?{" "}
                   <Link
                     className="underline hover:text-slate-300"
-                    to="/register">
+                    to="/recovery">
                     Recover it.
                   </Link>
                 </p>
@@ -126,4 +158,4 @@ const Email = () => {
   );
 };
 
-export default Email;
+export default Password;

@@ -5,33 +5,28 @@ import router from "./router/User.route.js";
 import { useConnect } from "./helpers/db_connection_single.js";
 import ENV from "./config.js";
 import cookieParser from "cookie-parser";
+import bodyParser from "body-parser";
 
 // init app
 const app = express();
-
-// middlewares
-// origins to allow
-// const whitelist = ["http://localhost:3000"];
-
-// // app.options("*", cors()); // pre-flight enabled
-// // CORS option
-// const corsOption = {
-//   credential: true,
-//   origin: (origin, callback) => {
-//     if (whitelist.includes(origin)) {
-//       return callback(null, true);
-//     } else {
-//       callback(new Error("Not allowed by CORS."));
-//       console.log("not allowed");
-//     }
-//   },
-// };
-// app.use(cors(corsOption));
 app.use(cors());
 app.use(morgan("tiny"));
 app.disable("x-powered-by");
 app.use(express.json());
 app.use(cookieParser());
+
+// server request bandwidth
+const bodyOpt = {
+  bandwidth: {
+    limit: "10mb",
+  },
+  encoded: {
+    extended: true,
+    limit: "10mb",
+  },
+};
+app.use(bodyParser.json(bodyOpt.bandwidth));
+app.use(bodyParser.urlencoded(bodyOpt.encoded));
 
 // context
 const port = ENV.SERVER_PORT;

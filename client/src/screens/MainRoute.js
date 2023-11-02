@@ -6,6 +6,7 @@ import Email from "../screens/Login/Email";
 import Password from "../screens/Login/Password";
 import Protected from "../components/Protected";
 import { useAuthStore } from "../context/useAuthStore";
+import Register from "./Register";
 
 const MainRoute = () => {
   const user = useAuthStore((state) => state.auth);
@@ -32,6 +33,7 @@ const MainRoute = () => {
             </Protected>
           }
         />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </>
   );

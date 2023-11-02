@@ -25,11 +25,11 @@ const UserSchema = new Schema({
     type: String,
     required: true,
   },
-  avatar: {
-    type: String,
+  photoURL: {
+    type: Buffer,
   },
   role: {
-    type: String,
+    type: Number,
     default: 1,
   },
   isActived: {
@@ -49,7 +49,7 @@ const UserSchema = new Schema({
     default: "Free time",
   },
   phone: {
-    type: Number,
+    type: String,
   },
 });
 

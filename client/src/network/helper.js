@@ -22,3 +22,23 @@ export async function login(email, password) {
     return response;
   }
 }
+
+// register function //
+export async function register(data) {
+  const { firstname, lastname, email, password, job, phone, photoURL } = data;
+  console.log(data);
+  try {
+    let response = await axios.post(ENV.REGISTER_PATH, {
+      firstname,
+      lastname,
+      email,
+      password,
+      job,
+      phone,
+      photoURL,
+    });
+    return response;
+  } catch ({ response }) {
+    return response;
+  }
+}

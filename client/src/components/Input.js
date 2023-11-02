@@ -11,8 +11,10 @@ const Input = (props) => {
 
       <input
         type={props.inputType || "text"}
+        accept={props.accept}
         id={props.inputID}
-        className={`w-full p-2 block rounded-lg text-sm  text-slate-200 focus:outline hover:outline ${
+        className={`w-full p-2 block rounded-lg text-sm  text-slate-200 focus:outline hover:outline
+        ${props.inputClass} ${
           props.error
             ? "outline outline-red-800 bg-red-600/20"
             : "outline-2 outline-teal-600 bg-teal-400/20"

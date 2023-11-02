@@ -72,7 +72,8 @@ const Password = () => {
                 <br />
                 connecting with us.
               </p>
-              {data.avatar ? (
+              {console.log(data.photoURL)}
+              {data.photoURL ? (
                 <div className="user-avatar flex justify-center mt-5 ">
                   <img
                     className="rounded-full bg-white/90 h-[96px] w-[96px] drop-shadow-md p-2 border-4 border-teal-800"

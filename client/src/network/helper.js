@@ -1,12 +1,20 @@
 // import axios from "../api/axios";
 import axios from "axios";
+// import { storage } from "../firebaseConfig.js";
+// import {
+//   getStorage,
+//   ref,
+//   uploadBytesResumable,
+//   getDownloadURL,
+//   uploadBytes,
+// } from "firebase/storage";
 import ENV from "../config.js";
 
 axios.defaults.baseURL = ENV.SERVER_BASE_URL;
 // authenticate function //
-export async function authenticate(email) {
+export async function authenticate(username) {
   try {
-    let response = await axios.get(`${ENV.AUTH_PATH}/${email}`);
+    let response = await axios.get(`${ENV.AUTH_PATH}/${username}`);
     return response;
   } catch ({ response }) {
     return response;
@@ -14,9 +22,9 @@ export async function authenticate(email) {
 }
 
 // login function //
-export async function login(email, password) {
+export async function login(username, password) {
   try {
-    let response = await axios.post(ENV.VERIFY_PATH, { email, password });
+    let response = await axios.post(ENV.VERIFY_PATH, { username, password });
     return response;
   } catch ({ response }) {
     return response;
@@ -24,21 +32,26 @@ export async function login(email, password) {
 }
 
 // register function //
-export async function register(data) {
-  const { firstname, lastname, email, password, job, phone, photoURL } = data;
-  console.log(data);
+export async function signUp(value) {
+  console.log(value);
   try {
-    let response = await axios.post(ENV.REGISTER_PATH, {
-      firstname,
-      lastname,
-      email,
-      password,
-      job,
-      phone,
-      photoURL,
-    });
+    // upload imageFile using firebase storage
+    // const storage = getStorage();
+    // const storageRef = ref(
+    //   storage,
+    //   `${username}/${ENV.PROFILE_STORAGE}/images/photo`
+    // );
+    // upload task
+    // const uploadTask = await uploadBytes(storageRef, photoFile);
+    // get image URL
+    // const photoURL = await getDownloadURL(uploadTask.ref);
+
+    let response = await axios.post("/api/register", value);
     return response;
   } catch ({ response }) {
     return response;
   }
 }
+
+// upload image function //
+export async function uploadImage(imageFile, path) {}

@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import "remixicon/fonts/remixicon.css";
-import Email from "../screens/Login/Email";
+import Username from "../screens/Login/Username";
 import Password from "../screens/Login/Password";
 import Protected from "../components/Protected";
 import { useAuthStore } from "../context/useAuthStore";
@@ -24,7 +24,7 @@ const MainRoute = () => {
       />
       <Routes>
         <Route path="/" element={<Protected isAuth={user}></Protected>} />
-        <Route path="/login" element={<Email />} />
+        <Route path="/login" element={<Username />} />
         <Route
           path="/verify"
           element={

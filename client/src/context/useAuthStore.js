@@ -2,11 +2,11 @@ import { create } from "zustand";
 
 export const useAuthStore = create((set) => ({
   auth: {},
-  setAuth: (user) =>
+  setAuth: ({ data }) =>
     set((state) => ({
       auth: {
         ...state.auth,
-        user,
+        data,
       },
     })),
 }));

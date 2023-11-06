@@ -4,8 +4,9 @@
 /.pnp
 .pnp.js
 
-node_modules
-# *.bak
+# etc
+#*.bak
+#/backup
 
 # testing
 /coverage

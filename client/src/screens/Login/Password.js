@@ -1,59 +1,72 @@
 // MODULES //
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useFormik } from "formik";
 import toast from "react-hot-toast";
+import * as yup from "yup";
+import { useForm } from "react-hook-form";
 import styles from "../../styles/Login.module.css";
 // COMPONENTS //
-import Input from "../../components/Input";
+import { Input } from "../../components/Form";
 import Loading from "../../components/Loading";
 import { login } from "../../network/helper";
 // ASSETS //
 import { useAuthStore } from "../../context/useAuthStore";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 const Password = () => {
   const navigate = useNavigate();
   const [isLoading, setLoading] = useState(false); // loading
-  const [error, setError] = useState({
-    state: false,
-    message: "",
-  }); // error state
-  const {
-    user: { data },
-  } = useAuthStore((state) => state.auth); // get prev data
+  const [error, setError] = useState({}); // error state
+  const { data } = useAuthStore((state) => state.auth); // get prev data
 
-  // Submit handle
-  const formik = useFormik({
-    initialValues: {
-      password: "",
-    },
-    validateOnBlur: false,
-    validateOnChange: false,
-    onSubmit: async ({ password }) => {
-      try {
-        setLoading(true);
-        let response = await login(data.email, password);
-        if (response.status === 200) {
-          // if succeed
-          setError({ state: false, message: "" }); // reset error state
-          localStorage.setItem("token", response.data.token); // save token to local storage
-          toast.success(response.data.message);
-        } else if (response.status === 404) {
-          // if not found
-          // show alert
-          window.alert("Unable to authenticate. Please try again :(.");
-          navigate("/login"); // navigate to /login
-        } else {
-          setError({ state: true, message: response.data.message });
-        }
-      } catch (error) {
-        setError({ state: true });
-        toast.error("Something went wrong. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    },
+  // validate roles
+  // item must have same name with field id
+  const roles = yup
+    .object({
+      password: yup.string().required(),
+    })
+    .required();
+
+  // form validate
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(roles),
   });
+
+  // onSubmit handler
+  const onSubmit = async ({ password }) => {
+    const { username } = data;
+    console.log("checking input: " + username);
+    try {
+      setLoading(true);
+      let { data, status } = await login(username, password);
+      if (status === 200) {
+        // succeed
+        localStorage.setItem("token", data.token); // store token
+        toast.success(data.message);
+      } else {
+        // error
+        const { element } = data;
+        setError({
+          [element]: {
+            message: data.message,
+          },
+        });
+      }
+    } catch (e) {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false); // default loading state
+    }
+  };
+
+  // error state change
+  useEffect(() => {
+    setError(errors);
+  }, [errors]);
 
   return (
     <>
@@ -72,19 +85,18 @@ const Password = () => {
                 <br />
                 connecting with us.
               </p>
-              {console.log(data.photoURL)}
               {data.photoURL ? (
                 <div className="user-avatar flex justify-center mt-5 ">
                   <img
                     className="rounded-full bg-white/90 h-[96px] w-[96px] drop-shadow-md p-2 border-4 border-teal-800"
                     alt="user avatar"
-                    src={data.avatar}
+                    src={data.photoURL}
                   />
                 </div>
               ) : (
                 <div
                   className="user-avatar flex justify-center mt-5"
-                  id="userAvatar"
+                  id="userPhoto"
                   data-letters={`
                   ${data.firstname.charAt(0)}${data.lastname.charAt(0)}
                 `}></div>
@@ -100,31 +112,14 @@ const Password = () => {
             {/* END HEADER */}
 
             {/* FORM */}
-            <form
-              className="w-100"
-              onSubmit={(e) => {
-                e.preventDefault();
-                formik.handleSubmit();
-              }}>
+            <form className="w-100" onSubmit={handleSubmit(onSubmit)}>
               <div className="grid grid-cols-1 mt-6">
                 <Input
-                  className="mb-2"
-                  labelText=""
+                  register={register}
                   placeholder="Password"
-                  inputType="password"
-                  error={error.state}
-                  isRequired={true}
-                  disabled={isLoading}
-                  action={{ ...formik.getFieldProps("password") }}
+                  id="password"
+                  onError={error}
                 />
-                {error.state ? (
-                  <span className="text-red-500">
-                    <i className="ri-error-warning-line ri-lg mr-1 h-100"></i>
-                    {error.message}
-                  </span>
-                ) : (
-                  ""
-                )}
               </div>
               <div className="w-100">
                 <p className="text-sm mb-5 mt-1">

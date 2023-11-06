@@ -12,10 +12,15 @@ const UserSchema = new Schema({
     type: String,
     required: true,
   },
-  // birthday: {
-  //   type: Date,
-  //   required: true,
-  // },
+  age: {
+    type: Number,
+    default: 0,
+  },
+  username: {
+    type: String,
+    required: true,
+    unique: [true],
+  },
   email: {
     type: String,
     required: true,
@@ -26,7 +31,8 @@ const UserSchema = new Schema({
     required: true,
   },
   photoURL: {
-    type: Buffer,
+    type: String,
+    // required: true,
   },
   role: {
     type: Number,
@@ -46,10 +52,11 @@ const UserSchema = new Schema({
   },
   job: {
     type: String,
-    default: "Free time",
+    default: "Freelancer",
   },
   phone: {
-    type: String,
+    type: Number,
+    default: 0,
   },
 });
 

@@ -6,4 +6,14 @@ export default {
   ACCESS_TOKEN_EXP: "10m",
   REFRESH_TOKEN_EXP: "23h",
   REDIS_URL: "localhost:8888",
+
+  ETHEREAL_CONFIG: {
+    host: "smtp.ethereal.email",
+    port: 587,
+    security: false,
+    auth: {
+      user: "nicolette.raynor4@ethereal.email",
+      pass: "9PmQS8Q4Vb7tTugT9t",
+    },
+  },
 };

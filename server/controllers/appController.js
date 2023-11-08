@@ -1,5 +1,6 @@
 import { UserModel } from "../models/User.model.js";
 import bcrypt from "bcrypt";
+import otpGenerator from "otp-generator";
 import ENV from "../config.js";
 import jwt from "jsonwebtoken";
 import { signAccessToken, signRefreshToken } from "../utils/useToken.js";
@@ -75,7 +76,9 @@ export async function login(req, res) {
     if (!comparedPwd)
       return res.status(401).json({
         message: "Username or Password is incorrect.",
-        data: { password },
+        data: {
+          element: "password",
+        },
       });
 
     // if match
@@ -205,3 +208,42 @@ export async function getUser(req, res) {
     });
   }
 }
+
+// GETgenerateOTP: localhost:8080/api/generateOTP
+export async function generateOTP(req, res) {
+  try {
+    req.app.locals.OTP = otpGenerator.generate(6, {
+      lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    return res.status(200).json({
+      message: "Generate OTP successfully.",
+      data: { code: req.app.locals.OTP },
+    });
+  } catch (error) {
+    // get user failed
+    return res.status(500).json({
+      message: "Something went wrong.",
+      data: error,
+    });
+  }
+}
+
+// GET: localhost:8080/api/verifyOTP
+// params: {code}
+export async function verifyOTP(req, res) {
+  const { code } = req.query;
+
+  if (parseInt(req.app.locals.OTP) === parseInt(code)) {
+    // if true
+    req.app.locals.OTP = null; // reset OTP
+    // req.app.locals.resetSession = true; // start session for reset password
+
+    return res.status(201).send({ message: "Verify successfully." });
+  }
+  return res.status(400).send({ message: "Invalid OTP." });
+}
+
+//

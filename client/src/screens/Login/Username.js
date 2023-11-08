@@ -10,7 +10,7 @@ import styles from "../../styles/Login.module.css";
 import { Input } from "../../components/Form";
 import Loading from "../../components/Loading";
 import { useAuthStore } from "../../context/useAuthStore";
-import { authenticate } from "../../network/helper";
+import { authenticate, generateOTP } from "../../network/helper";
 // ASSETS //
 import unknownUser from "../../assets/images/user-unknown.png";
 
@@ -33,7 +33,6 @@ const Username = () => {
   } = useForm({
     resolver: yupResolver(roles),
   });
-
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth); // use setAuth hook
 
@@ -41,6 +40,8 @@ const Username = () => {
   const onSubmit = async ({ Username }) => {
     try {
       setLoading(true);
+      console.log(await generateOTP());
+
       let { data, status } = await authenticate(Username);
       if (status === 200) {
         // succeed

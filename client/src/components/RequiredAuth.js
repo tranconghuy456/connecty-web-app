@@ -1,3 +1,4 @@
+// MODULES //
 import React from "react";
 import useAuth from "../hooks/useAuth";
 import { Outlet, useLocation } from "react-router-dom";

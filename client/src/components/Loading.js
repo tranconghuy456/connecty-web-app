@@ -1,5 +1,7 @@
+// MODULES //
 import React from "react";
 
+// ASSETS//
 import logoTrans from "../assets/images/logo-trans.png";
 import "../index.css";
 

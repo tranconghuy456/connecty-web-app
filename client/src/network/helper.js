@@ -55,3 +55,9 @@ export async function signUp(value) {
 
 // upload image function //
 export async function uploadImage(imageFile, path) {}
+
+// generate OTP
+export async function generateOTP() {
+  let response = await axios.get("/api/generateOTP");
+  return response;
+}

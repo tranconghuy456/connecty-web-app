@@ -16,4 +16,5 @@ router
 router
   .route("/authenticate/:username")
   .get(controller.getUser, (req, res) => res.end()); // authenticate endpoint
+router.route("/generateOTP").get(controller.generateOTP);
 export default router;

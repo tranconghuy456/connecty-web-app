@@ -49,7 +49,7 @@ const Password = () => {
         toast.success(data.message);
       } else {
         // error
-        const { element } = data;
+        const { element } = data["data"];
         setError({
           [element]: {
             message: data.message,
@@ -117,6 +117,7 @@ const Password = () => {
                 <Input
                   register={register}
                   placeholder="Password"
+                  type="password"
                   id="password"
                   onError={error}
                 />

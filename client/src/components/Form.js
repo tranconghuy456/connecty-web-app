@@ -1,5 +1,7 @@
+// MODULES
 import React from "react";
 
+// Input field
 const Input = ({
   id,
   className,
@@ -29,7 +31,7 @@ const Input = ({
         value={value}
       />
       {onError[id] && (
-        <span className="text-red-500 text-sm">
+        <span className="text-red-500 text-sm mt-1">
           <i className="ri-error-warning-line ri-lg mr-1 h-100"></i>
           {onError[id]["message"]}
         </span>
@@ -38,8 +40,7 @@ const Input = ({
   );
 };
 
-export { Input };
-
+// File Input field
 const FileInput = ({
   id,
   className,
@@ -81,4 +82,4 @@ const FileInput = ({
   );
 };
 
-export { FileInput };
+export { Input, FileInput };

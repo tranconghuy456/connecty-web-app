@@ -1,35 +1,38 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-import router from "./router/User.route.js";
+import router from "./router/auth.route.js";
 import { useConnect } from "./helpers/db_connection_single.js";
-import ENV from "./config.js";
 import cookieParser from "cookie-parser";
-import bodyParser from "body-parser";
+import * as ENV from "./config/config.js";
+import { logger, logEvents, credentials } from "./middlewares/middlewares.js";
 
 // init app
 const app = express();
+
+// custom middleware logger
+// app.use(logger);
+// Handle options credentials check - before CORS!
+// and fetch cookies credentials requirement
+app.use(credentials);
+
+// Cross Origin Resource Sharing
 app.use(cors());
-app.use(morgan("tiny"));
-app.disable("x-powered-by");
+
+// built-in middleware for json
 app.use(express.json());
+
+// built-in middleware to handle urlencoded form data
+app.use(express.urlencoded({ extended: false }));
+
+//middleware for cookies
 app.use(cookieParser());
 
-// server request bandwidth
-const bodyOpt = {
-  bandwidth: {
-    limit: "10mb",
-  },
-  encoded: {
-    extended: true,
-    limit: "10mb",
-  },
-};
-app.use(bodyParser.json(bodyOpt.bandwidth));
-app.use(bodyParser.urlencoded(bodyOpt.encoded));
+app.use(morgan("tiny"));
+app.disable("x-powered-by");
 
 // context
-const port = ENV.SERVER_PORT;
+const port = ENV.SERVER.PORT;
 
 // Default GET Request
 app.get("/", (req, res, next) => {

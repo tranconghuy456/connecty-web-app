@@ -34,7 +34,7 @@ const UserSchema = new Schema({
     type: String,
     // required: true,
   },
-  role: {
+  roles: {
     type: Number,
     default: 1,
   },
@@ -61,20 +61,23 @@ const UserSchema = new Schema({
 });
 
 const UserTokenSchema = new Schema({
-  userId: {
-    type: Schema.Types.ObjectId,
+  uid: {
+    type: String,
     required: true,
   },
   token: { type: String, required: true },
+  roles: { type: Number, required: true, default: 1 },
   createdAt: {
     type: Date,
     default: Date.now,
   },
-  expires: {
+  exp: {
     type: String,
     required: true,
   },
 });
+
+const RoleSchema = new Schema({});
 
 export const UserModel = mongoose.model("Users", UserSchema);
 export const UserTokenModel = mongoose.model("UserToken", UserTokenSchema);

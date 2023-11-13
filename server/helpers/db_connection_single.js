@@ -5,5 +5,8 @@ export const useConnect = async () => {
   const mongod = await MongoMemoryServer.create();
   const getUri = mongod.getUri();
 
-  return await mongoose.connect(getUri);
+  return await mongoose.connect(getUri, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+  });
 };

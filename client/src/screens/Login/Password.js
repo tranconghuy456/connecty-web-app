@@ -9,6 +9,7 @@ import styles from "../../styles/Login.module.css";
 import { Input } from "../../components/Form";
 import Loading from "../../components/Loading";
 import { login } from "../../network/helper";
+import useRefreshToken from "../../hooks/useRefreshToken";
 // ASSETS //
 import { useAuthStore } from "../../context/useAuthStore";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -18,6 +19,7 @@ const Password = () => {
   const [isLoading, setLoading] = useState(false); // loading
   const [error, setError] = useState({}); // error state
   const { data } = useAuthStore((state) => state.auth); // get prev data
+  const refresh = useRefreshToken();
 
   // validate roles
   // item must have same name with field id
@@ -47,6 +49,9 @@ const Password = () => {
         // succeed
         localStorage.setItem("token", data.token); // store token
         toast.success(data.message);
+
+        let res = refresh();
+        console.log(refresh);
       } else {
         // error
         const { element } = data["data"];

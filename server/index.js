@@ -5,7 +5,7 @@ import router from "./router/auth.route.js";
 import { useConnect } from "./helpers/db_connection_single.js";
 import cookieParser from "cookie-parser";
 import * as ENV from "./config/config.js";
-import { logger, logEvents, credentials } from "./middlewares/middlewares.js";
+import * as middlewares from "./middlewares/middlewares.js";
 
 // init app
 const app = express();
@@ -14,7 +14,7 @@ const app = express();
 // app.use(logger);
 // Handle options credentials check - before CORS!
 // and fetch cookies credentials requirement
-app.use(credentials);
+app.use(middlewares.credentials);
 
 // Cross Origin Resource Sharing
 app.use(cors());
@@ -40,7 +40,7 @@ app.get("/", (req, res, next) => {
 });
 
 // API routes
-app.use("/api", router);
+app.use("/api/v1", router);
 
 // db connection
 const db = await useConnect();

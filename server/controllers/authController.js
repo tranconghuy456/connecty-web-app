@@ -11,17 +11,29 @@ const register = async (req, res) => {
     // check existance
     let isEmailExist = await UserModel.findOne({ email });
     let isUsernameExist = await UserModel.findOne({ username });
+
     // if username is exist
     if (isUsernameExist)
-      return res.status(400).json({
-        message: "The username is already in use.",
-        data: { element: "username" },
+      return res.status(409).json({
+        errorStatus: true,
+        errorCode: "CREATE_USER_FAILED",
+        errorMessage: "The username is already in use.",
+        data: {
+          field: "username",
+          value: username,
+        },
       });
+
     // if email is exist
     if (isEmailExist)
-      return res.status(400).json({
-        message: "The email is already in use.",
-        data: { element: "email" },
+      return res.status(409).json({
+        errorStatus: true,
+        errorCode: "CREATE_USER_FAILED",
+        errorMessage: "The email is already in use.",
+        data: {
+          field: "email",
+          value: email,
+        },
       });
 
     // if not exist
@@ -38,23 +50,24 @@ const register = async (req, res) => {
         .then(() => {
           // if succeed
           return res.status(201).json({
-            message: "Register successfully.",
+            errorStatus: false,
+            errorCode: "USER_CREATED_SUCCESSFULLY",
+            errorMessage: "Account created successfully.",
             data: { ...etc },
           });
         })
         .catch((error) => {
           // if failed
-          return res.status(501).json({
-            message: "Access is denied.",
-            data: error,
-          });
+          throw Error(error);
         });
     });
   } catch (error) {
     // register failed
     return res.status(500).json({
-      message: "Internal server error.",
-      data: error,
+      errorStatus: true,
+      errorCode: "INTERNAL_SERVER_ERROR",
+      errorMessage: "Internal server error.",
+      data: { error },
     });
   }
 };
@@ -71,9 +84,14 @@ const login = async (req, res) => {
     let comparedPwd = await bcrypt.compare(password, user.password);
     // if not match
     if (!comparedPwd)
-      return res.status(401).json({
-        message: "Password is incorrect.",
-        data: { element: "password" },
+      return res.status(404).json({
+        errorStatus: true,
+        errorCode: "AUTH_FAILED",
+        errorMessage: "Password is incorrect.",
+        data: {
+          field: "password",
+          value: password,
+        },
       });
 
     // if match
@@ -95,7 +113,12 @@ const login = async (req, res) => {
     }).save();
     // if saving failed
     if (!userToken) {
-      return res.status(401).send({ message: "Unauthorized." });
+      return res.status(401).send({
+        errorStatus: true,
+        errorCode: "AUTH_FAILED",
+        errorMessage: "Unauthorized.",
+        data: {},
+      });
     }
 
     // if saved
@@ -107,14 +130,21 @@ const login = async (req, res) => {
     });
     // Send authorization roles and access token to user
     return res.status(200).json({
-      message: "Login successfully.",
-      data: { accessToken: accessToken, roles: user.roles },
+      errorStatus: false,
+      errorCode: "AUTH_SUCCESS",
+      errorMessage: "Login Successfully.",
+      data: {
+        accessToken: accessToken,
+        roles: user.roles,
+      },
     });
   } catch (error) {
     // login failed
     return res.status(500).json({
-      message: "Internal server error.",
-      data: error,
+      errorStatus: true,
+      errorCode: "INTERNAL_SERVER_ERROR",
+      errorMessage: "Internal server error.",
+      data: { error },
     });
   }
 };
@@ -156,43 +186,4 @@ const logout = async (req, res) => {
   res.status(204);
 };
 
-const verifyRT = async (req, res) => {
-  const refreshToken = req.cookies["refreshToken"];
-  // if invalid
-  if (!refreshToken)
-    return res
-      .status(401)
-      .json({ message: "Invalid token.", data: refreshToken });
-
-  // if valid
-  try {
-    // get user id
-    let user = UserTokenModel.findOne({ refreshToken });
-    // if not found
-    if (!user)
-      return res
-        .status(401)
-        .json({ message: "Invalid token.", data: refreshToken });
-    // if found
-    jwt.verify(
-      refreshToken,
-      ENV.TOKEN.REFRESH_TOKEN_PRIVATE_KEY,
-      async (error, payload) => {
-        if (error || user._id.toHexString() !== payload.uid)
-          return res
-            .status(401)
-            .json({ message: "Invalid token.", data: refreshToken });
-
-        // return access token
-        return await jwt.sign({
-          user: {
-            uid: payload.uid,
-            roles: user.roles,
-          },
-        });
-      }
-    );
-  } catch (error) {}
-};
-
-export { register, login, logout, verifyRT };
+export { register, login, logout };

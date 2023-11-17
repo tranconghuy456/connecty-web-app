@@ -1,6 +1,6 @@
 import * as ENV from "../config/config.js";
 
-export default (req, res, next) => {
+const credentials = (req, res, next) => {
   const allowedOrigins = ENV.SERVER.ALLOWED_ORIGIN;
   const origin = req.headers.origin;
 
@@ -8,3 +8,5 @@ export default (req, res, next) => {
     res.headers("Access-Control-Allow-Credentials", true);
   next();
 };
+
+export { credentials };

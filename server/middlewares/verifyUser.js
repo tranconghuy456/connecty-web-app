@@ -1,14 +1,16 @@
 import { UserModel } from "../models/User.model.js";
 
-export default async (req, res, next) => {
+const verifyUser = async (req, res, next) => {
   try {
     const { username } = req.body;
     // checkpoint
-    let user = await UserModel.find({ username });
+    let user = await UserModel.findOne({ username });
     // if not found
     if (!user)
       return res.status(404).json({
-        message: "The username you entered doesn't belong to an account.",
+        errorStatus: true,
+        errorCode: "NOT_FOUND",
+        errorMessage: "The account you entered doesn't belong to an account.",
         data: { username },
       });
     next();
@@ -19,3 +21,5 @@ export default async (req, res, next) => {
     });
   }
 };
+
+export { verifyUser };

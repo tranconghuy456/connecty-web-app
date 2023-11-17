@@ -9,17 +9,9 @@ router.route("/register").post(controller.register);
 router.route("/login").post(middleware.verifyUser, controller.login);
 router.route("/logout").post(controller.logout);
 
-// // POST METHOD
-// router.route("/register").post(controller.register);
-// router.route("/login").post(controller.verifyUser, controller.login);
+// GET METHOD
+// router.route("/users/:username").get(controller.verify,controller.getUser, (req, res) => res.end());
+// router.route("/security/otp").get(controller.generateOTP, (req, res) => res.end());
+// router.route("/security/token").get(controller.generateToken, (req, res) => res.end());
 
-// // GET METHOD
-// router
-//   .route("/user/:username")
-//   .get(controller.verifyToken, controller.getUser, (req, res) => res.end());
-
-// router
-//   .route("/authenticate/:username")
-//   .get(controller.getUser, (req, res) => res.end()); // authenticate endpoint
-// router.route("/generateOTP").get(controller.generateOTP);
 export default router;

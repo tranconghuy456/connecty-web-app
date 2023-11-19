@@ -1,4 +1,5 @@
 import * as ENV from "../config/config.js";
+import logger from "../logs/logger.js";
 import { UserModel, UserTokenModel } from "../models/User.model.js";
 import { generateAT, generateRT } from "../utils/useToken.js";
 import bcrypt from "bcrypt";
@@ -63,6 +64,8 @@ const register = async (req, res) => {
     });
   } catch (error) {
     // register failed
+    logger.log("error", error);
+
     return res.status(500).json({
       errorStatus: true,
       errorCode: "server/unknown_error",
@@ -140,6 +143,8 @@ const login = async (req, res) => {
     });
   } catch (error) {
     // login failed
+    logger.log("error", error);
+
     return res.status(500).json({
       errorStatus: true,
       errorCode: "server/unknown_error",
@@ -225,6 +230,8 @@ const getUser = async (req, res) => {
       data: { ...next },
     });
   } catch (error) {
+    logger.log("error", error);
+
     return res.status(500).json({
       errorStatus: true,
       errorCode: "server/unknown_error",

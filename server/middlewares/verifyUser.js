@@ -1,3 +1,4 @@
+import logger from "../logs/logger.js";
 import { UserModel } from "../models/User.model.js";
 
 const verifyUser = async (req, res, next) => {
@@ -15,11 +16,13 @@ const verifyUser = async (req, res, next) => {
       });
     next();
   } catch (error) {
+    logger.log("error", error);
+
     return res.status(500).json({
       errorStatus: true,
       errorCode: "server/unknown_error",
       errorMessage: "Internal server error.",
-      data: {error},
+      data: { error },
     });
   }
 };

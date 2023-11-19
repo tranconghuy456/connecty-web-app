@@ -9,15 +9,17 @@ const verifyUser = async (req, res, next) => {
     if (!user)
       return res.status(404).json({
         errorStatus: true,
-        errorCode: "NOT_FOUND",
+        errorCode: "auth/not_found",
         errorMessage: "The account you entered doesn't belong to an account.",
         data: { username },
       });
     next();
   } catch (error) {
     return res.status(500).json({
-      message: "Internal server error.",
-      data: error,
+      errorStatus: true,
+      errorCode: "server/unknown_error",
+      errorMessage: "Internal server error.",
+      data: {error},
     });
   }
 };

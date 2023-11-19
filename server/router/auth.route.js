@@ -10,7 +10,11 @@ router.route("/login").post(middleware.verifyUser, controller.login);
 router.route("/logout").post(controller.logout);
 
 // GET METHOD
-// router.route("/users/:username").get(controller.verify,controller.getUser, (req, res) => res.end());
+router
+  .route("/users/:username")
+  .get(middleware.verifyAccessToken, controller.getUser, (req, res) =>
+    res.end()
+  );
 // router.route("/security/otp").get(controller.generateOTP, (req, res) => res.end());
 // router.route("/security/token").get(controller.generateToken, (req, res) => res.end());
 

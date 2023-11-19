@@ -7,7 +7,7 @@ import bcrypt from "bcrypt";
 // params: {firstname, lastname, age, phone, job, username, email, password, role, isActived, createdAt, updatedAt}
 const register = async (req, res) => {
   try {
-    const { password, username, email, ...etc } = req.body;
+    const { password, username, email, ...next } = req.body;
     // check existance
     let isEmailExist = await UserModel.findOne({ email });
     let isUsernameExist = await UserModel.findOne({ username });
@@ -16,7 +16,7 @@ const register = async (req, res) => {
     if (isUsernameExist)
       return res.status(409).json({
         errorStatus: true,
-        errorCode: "CREATE_USER_FAILED",
+        errorCode: "create/conflict",
         errorMessage: "The username is already in use.",
         data: {
           field: "username",
@@ -28,7 +28,7 @@ const register = async (req, res) => {
     if (isEmailExist)
       return res.status(409).json({
         errorStatus: true,
-        errorCode: "CREATE_USER_FAILED",
+        errorCode: "create/conflict",
         errorMessage: "The email is already in use.",
         data: {
           field: "email",
@@ -41,19 +41,19 @@ const register = async (req, res) => {
     bcrypt.hash(password, ENV.TOKEN.SALT_ROUNDS).then((hashedPwd) => {
       // User schema -> save profile
       new UserModel({
-        ...etc,
         username,
         email,
         password: hashedPwd,
+        ...next,
       })
         .save()
         .then(() => {
           // if succeed
           return res.status(201).json({
             errorStatus: false,
-            errorCode: "USER_CREATED_SUCCESSFULLY",
-            errorMessage: "Account created successfully.",
-            data: { ...etc },
+            errorCode: {},
+            errorMessage: {},
+            data: { ...next },
           });
         })
         .catch((error) => {
@@ -65,7 +65,7 @@ const register = async (req, res) => {
     // register failed
     return res.status(500).json({
       errorStatus: true,
-      errorCode: "INTERNAL_SERVER_ERROR",
+      errorCode: "server/unknown_error",
       errorMessage: "Internal server error.",
       data: { error },
     });
@@ -86,7 +86,7 @@ const login = async (req, res) => {
     if (!comparedPwd)
       return res.status(404).json({
         errorStatus: true,
-        errorCode: "AUTH_FAILED",
+        errorCode: "auth/not_found",
         errorMessage: "Password is incorrect.",
         data: {
           field: "password",
@@ -115,7 +115,7 @@ const login = async (req, res) => {
     if (!userToken) {
       return res.status(401).send({
         errorStatus: true,
-        errorCode: "AUTH_FAILED",
+        errorCode: "auth/unathorized",
         errorMessage: "Unauthorized.",
         data: {},
       });
@@ -131,8 +131,8 @@ const login = async (req, res) => {
     // Send authorization roles and access token to user
     return res.status(200).json({
       errorStatus: false,
-      errorCode: "AUTH_SUCCESS",
-      errorMessage: "Login Successfully.",
+      errorCode: {},
+      errorMessage: {},
       data: {
         accessToken: accessToken,
         roles: user.roles,
@@ -142,13 +142,14 @@ const login = async (req, res) => {
     // login failed
     return res.status(500).json({
       errorStatus: true,
-      errorCode: "INTERNAL_SERVER_ERROR",
+      errorCode: "server/unknown_error",
       errorMessage: "Internal server error.",
       data: { error },
     });
   }
 };
 
+// POST: {SERVER_API}/logout
 const logout = async (req, res) => {
   const cookies = req.cookies;
   if (!cookies?.["refreshToken"]) return res.status(204); // no content
@@ -169,13 +170,16 @@ const logout = async (req, res) => {
 
   // if exist
   // delete RT in db
-  isTokenExist.refreshToken = "";
+  isTokenExist["refreshToken"] = "";
   // saving changes
   const result = await isTokenExist.save();
   if (!result)
     // if cannot save
     return res.status(501).json({
-      message: "Access is denied.",
+      errorStatus: true,
+      errorCode: "auth/unauthorized",
+      errorMessage: "Access is denied.",
+      data: {},
     });
   // saved
   res.clearCookie("refreshToken", {
@@ -186,4 +190,47 @@ const logout = async (req, res) => {
   res.status(204);
 };
 
-export { register, login, logout };
+// GET: {SERVER_API}/users/:username
+// params: {username}
+const getUser = async (req, res) => {
+  try {
+    const { username } = req.params;
+    // invalid query
+    if (!username)
+      return res.status(501).json({
+        errorStatus: true,
+        errorCode: "server/invalid_query",
+        errorMessage: "Invalid query.",
+        data: {},
+      });
+
+    let user = await UserModel.findOne({ username });
+    // if not exist
+    if (!user)
+      return res.status(404).json({
+        errorStatus: true,
+        errorCode: "users/not_found",
+        errorMessage: "The username you entered doesn't belong to an account.",
+        data: {
+          field: "username",
+          value: username,
+        },
+      });
+    // if exist
+    let { password, ...next } = user._doc;
+    return res.status(200).json({
+      errorStatus: false,
+      errorCode: {},
+      errorMessage: {},
+      data: { ...next },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      errorStatus: true,
+      errorCode: "server/unknown_error",
+      errorMessage: "Internal server error.",
+      data: {},
+    });
+  }
+};
+export { register, login, logout, getUser };

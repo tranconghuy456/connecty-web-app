@@ -4,9 +4,15 @@ import { UserTokenModel } from "../models/User.model.js";
 
 const verifyAccessToken = async (req, res, next) => {
   try {
-    const header = req.headers["x-access-token"] || req.headers.Authorization;
-
-    if (!header?.startWith("Bearer ")) return res.sendStatus(401);
+    const header =
+      req.headers["x-access-token"] || req.headers["Authorization"];
+    if (!header?.startsWith("Bearer "))
+      return res.status(401).json({
+        errorStatus: true,
+        errorCode: "auth/unauthorized.",
+        errorMessage: "Unauthorized.",
+        data: {},
+      });
 
     const token = header.split(" ")[1];
 
@@ -16,38 +22,48 @@ const verifyAccessToken = async (req, res, next) => {
       ENV.TOKEN.ACCESS_TOKEN_PRIVATE_KEY,
       async (error, payload) => {
         // handle verify error
-        switch (error.name) {
-          case "TokenExpiredError":
-            // expired token
-            try {
-              req.locals.accessToken = await verifyRT();
-              next();
-            } catch (error) {
+        if (error) {
+          switch (error.name) {
+            case "TokenExpiredError":
+              // expired token
+              try {
+                req.locals.accessToken = await verifyRT();
+                next();
+              } catch (error) {
+                return res.status(403).json({
+                  errorStatus: true,
+                  errorCode: "auth/unauthorized",
+                  errorMessage: "Invalid token.",
+                  data: {},
+                });
+              }
+              break;
+            default:
               return res.status(403).json({
                 errorStatus: true,
-                errorCode: "INVALID_TOKEN",
+                errorCode: "auth/unauthorized",
                 errorMessage: "Invalid token.",
                 data: {},
               });
-            }
-            break;
-          default:
-            return res.status(403).json({
-              errorStatus: true,
-              errorCode: "INVALID_TOKEN",
-              errorMessage: "Invalid token.",
-              data: {},
-            });
+          }
         }
         // save token
-        req.locals.accessToken = token;
+        // req.locals.accessToken = token;
+        res.status(200).json({
+          errorStatus: true,
+          errorCode: {},
+          errorMessage: {},
+          data: {
+            accessToken: token,
+          },
+        });
         next();
       }
     );
   } catch (error) {
     return res.status(500).json({
       errorStatus: true,
-      errorCode: "SERVER_ERROR",
+      errorCode: "server/unknown_error",
       errorMessage: "Internal server error.",
       data: { error },
     });
@@ -63,7 +79,7 @@ const verifyRefreshToken = async (req, res, next) => {
     if (!refreshToken)
       return res.status(401).json({
         errorStatus: true,
-        errorCode: "INVALID_TOKEN",
+        errorCode: "auth/unauthorized",
         errorMessage: "Invalid token.",
         data: {},
       });
@@ -75,7 +91,7 @@ const verifyRefreshToken = async (req, res, next) => {
     if (!user)
       return res.status(401).json({
         errorStatus: true,
-        errorCode: "INVALID_TOKEN",
+        errorCode: "auth/unauthorized",
         errorMessage: "Invalid token.",
         data: {},
       });
@@ -90,7 +106,7 @@ const verifyRefreshToken = async (req, res, next) => {
         if (error.name || user._id.toHexString() !== payload.uid)
           return res.status(401).json({
             errorStatus: true,
-            errorCode: "INVALID_TOKEN",
+            errorCode: "auth/unauthorized",
             errorMessage: "Invalid token.",
             data: {},
           });
@@ -107,7 +123,7 @@ const verifyRefreshToken = async (req, res, next) => {
   } catch (error) {
     return res.status(500).json({
       errorStatus: true,
-      errorCode: "SERVER_ERROR",
+      errorCode: "server/unknown_error",
       errorMessage: "Internal server error.",
       data: { error },
     });

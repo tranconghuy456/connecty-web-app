@@ -3,7 +3,7 @@ import { UserModel } from "../models/User.model.js";
 
 const verifyUser = async (req, res, next) => {
   try {
-    const { username } = req.body;
+    const { userdname } = req.body;
     // checkpoint
     let user = await UserModel.findOne({ username });
     // if not found

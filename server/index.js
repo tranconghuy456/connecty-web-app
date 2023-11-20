@@ -11,6 +11,7 @@ import { useConnect } from "./helpers/db_connection_single.js";
 import * as ENV from "./config/config.js";
 import * as middlewares from "./middlewares/middlewares.js";
 import logger from "./logs/logger.js";
+import { logHandler } from "./logs/logger.js";
 
 // init app
 const app = express();
@@ -45,6 +46,7 @@ app.get("/", (req, res, next) => {
 });
 
 // API routes
+app.use(logHandler);
 app.use("/api/v1", router);
 
 // db connection

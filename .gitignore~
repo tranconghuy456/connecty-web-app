@@ -7,8 +7,9 @@
 .pnp.js
 
 # etc
-#*.bak
-#/backup
+*.bak
+/backup
+/clones
 
 # testing
 /coverage

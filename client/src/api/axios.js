@@ -1,16 +1,16 @@
-// MODULES //
 import axios from "axios";
-// CONFIGS
-import ENV from "../config.js";
+import * as ENV from "../configs/root.js";
 
 export default axios.create({
-  baseURL: ENV.SERVER_BASE_URL,
+  baseURL: ENV.API["BASE_URL"],
 });
 
-export const axiosSecure = axios.create({
-  baseURL: ENV.SERVER_BASE_URL,
+const axiosPrivate = axios.create({
+  baseURL: ENV.API["BASE_URL"],
   headers: {
     "Content-Type": "application/json",
   },
   withCredentials: true,
 });
+
+export { axiosPrivate };

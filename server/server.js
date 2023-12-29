@@ -11,15 +11,16 @@ import { useConnect } from "./helpers/db_connection_single.js";
 const app = express();
 
 // configs
-// built-in middleware for JSON
-app.use(express.json());
+app.use(middleware.credentials);
 
 // CORS
-app.use(cors());
+app.use(cors(ENV.SERVER.CORS));
 
 // built-in middleware to handle urlencoded form data
 app.use(express.urlencoded({ extended: false }));
 
+// built-in middleware for JSON
+app.use(express.json());
 // middleware for cookies
 app.use(cookieParser());
 // middleware for local variables

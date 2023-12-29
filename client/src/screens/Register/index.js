@@ -1,4 +1,3 @@
-// MODULES //
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -6,23 +5,13 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import styles from "../../styles/Login.module.css";
-// COMPONENTS //
 import { Input } from "../../components/Form";
 import Loading from "../../components/Loading";
-import { signUp } from "../../network/helper";
-// ASSETS //
 import unknownUser from "../../assets/images/user-unknown.png";
-import ENV from "../../config";
-// import {
-//   base64ToArrayBuffer,
-//   fileToBase64,
-//   fileToBlob,
-// } from "../../utils/convert";
 
 const Register = () => {
   const [isLoading, setLoading] = useState(false); // loading
   const [error, setError] = useState({}); // error state
-  // const [photo, setPhoto] = useState(unknownUser);
   // validate roles
   // item must have same name with field id
   const roles = yup.object().shape({
@@ -34,25 +23,6 @@ const Register = () => {
     confirm: yup
       .string()
       .oneOf([yup.ref("password")], "Password doesn't match."),
-    // photo validate
-    // photoFile: yup
-    //   .mixed()
-    //   .required("Photo is required.")
-    //   .test(
-    //     "FILE_SIZE",
-    //     "Photo is required.",
-    //     (value) => value[0] && value[0].size >= 1
-    //   )
-    //   .test(
-    //     "FILE_FORMAT",
-    //     "Unsupported format",
-    //     (value) => value[0] && ENV.IMAGE_SUPPORTED.includes(value[0].type)
-    //   )
-    //   .test(
-    //     "FILE_SIZE",
-    //     "Image size is too large.",
-    //     (value) => value[0] && value[0].size <= ENV.IMAGE_SIZE
-    //   ),
     phone: yup.number().positive(),
     age: yup.number().positive(),
     job: yup.string(),
@@ -73,29 +43,6 @@ const Register = () => {
   const onSubmit = async (value) => {
     try {
       setLoading(true);
-      // conver imageFile to blob
-      // const blob = await fileToBlob(value.photoFile[0]);
-
-      // helper: signUp
-      let { data, status } = await signUp({ ...value }); // photoFile: blob });
-
-      if (status === 201) {
-        // succeed
-        toast.success(data.message);
-        setTimeout(() => {
-          navigate("/login");
-        }, 1000);
-        // navigate("/verify");
-      } else {
-        // error
-        const { element } = data["data"];
-
-        setError({
-          [element]: {
-            message: data.message,
-          },
-        });
-      }
     } catch (e) {
       // verify failed
       toast.error("Something went wrong. Please try again.");

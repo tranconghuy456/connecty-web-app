@@ -6,17 +6,16 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import styles from "../../styles/Login.module.css";
-// COMPONENTS //
 import { Input } from "../../components/Form";
 import Loading from "../../components/Loading";
 import { useAuthStore } from "../../context/useAuthStore";
-import { authenticate, generateOTP } from "../../network/helper";
-// ASSETS //
 import unknownUser from "../../assets/images/user-unknown.png";
+import { verifyUserByUsername } from "../../helpers/helper";
 
 const Username = () => {
   const [isLoading, setLoading] = useState(false); // loading
-  const [error, setError] = useState({}); // error state
+  const [error, setError] = useState([]); // error state
+  console.log(error);
   // validate roles
   // item must have same name with field id
   const roles = yup
@@ -40,22 +39,10 @@ const Username = () => {
   const onSubmit = async ({ Username }) => {
     try {
       setLoading(true);
-      console.log(await generateOTP());
+      let response = await verifyUserByUsername(Username);
 
-      let { data, status } = await authenticate(Username);
-      if (status === 200) {
-        // succeed
-        setAuth(data);
-        navigate("/verify");
-      } else {
-        // error
-        const { element } = data;
-        setError({
-          [element]: {
-            message: data.message,
-          },
-        });
-      }
+      if (response.status === 200) return navigate("/verify");
+      setError(response.errors);
     } catch (e) {
       // verify failed
       toast.error("Something went wrong. Please try again.");
@@ -66,8 +53,8 @@ const Username = () => {
 
   // error state change
   useEffect(() => {
-    setError(errors);
-  }, [errors]);
+    setError(error);
+  }, [error]);
 
   return (
     <>

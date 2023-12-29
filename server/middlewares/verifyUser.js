@@ -2,7 +2,7 @@ import { UserModel } from "../models/user.model.js";
 
 const verifyUserByUsername = async (req, res, next) => {
   try {
-    let { username } = req?.body || req?.params;
+    let { username } = req.body || req.params;
 
     // if invalid
     if (!username) {
@@ -12,6 +12,7 @@ const verifyUserByUsername = async (req, res, next) => {
           {
             message: "Invalid username",
             code: 400,
+            element: "Username",
           },
         ],
       });
@@ -28,6 +29,7 @@ const verifyUserByUsername = async (req, res, next) => {
           {
             message: "The Username you entered doesn't belong to any account",
             code: 404,
+            element: "Username",
           },
         ],
       });
@@ -35,7 +37,9 @@ const verifyUserByUsername = async (req, res, next) => {
 
     // if defined
     // passing
-    next();
+    return res.status(200).json({
+      status: "OK",
+    });
   } catch (error) {
     return res.status(500).json({
       status: "error",
@@ -62,6 +66,7 @@ const verifyUserByEmail = async (req, res, next) => {
           {
             message: "Invalid email",
             code: 400,
+            element: "Email",
           },
         ],
       });
@@ -78,6 +83,7 @@ const verifyUserByEmail = async (req, res, next) => {
           {
             message: "The Email you entered doesn't belong to any account",
             code: 404,
+            element: "Email",
           },
         ],
       });

@@ -1,16 +1,11 @@
-// MODULES //
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import * as yup from "yup";
 import { useForm } from "react-hook-form";
 import styles from "../../styles/Login.module.css";
-// COMPONENTS //
 import { Input } from "../../components/Form";
 import Loading from "../../components/Loading";
-import { login } from "../../network/helper";
-import useRefreshToken from "../../hooks/useRefreshToken";
-// ASSETS //
 import { useAuthStore } from "../../context/useAuthStore";
 import { yupResolver } from "@hookform/resolvers/yup";
 
@@ -19,7 +14,6 @@ const Password = () => {
   const [isLoading, setLoading] = useState(false); // loading
   const [error, setError] = useState({}); // error state
   const { data } = useAuthStore((state) => state.auth); // get prev data
-  const refresh = useRefreshToken();
 
   // validate roles
   // item must have same name with field id
@@ -44,23 +38,6 @@ const Password = () => {
     console.log("checking input: " + username);
     try {
       setLoading(true);
-      let { data, status } = await login(username, password);
-      if (status === 200) {
-        // succeed
-        localStorage.setItem("token", data.token); // store token
-        toast.success(data.message);
-
-        let res = refresh();
-        console.log(refresh);
-      } else {
-        // error
-        const { element } = data["data"];
-        setError({
-          [element]: {
-            message: data.message,
-          },
-        });
-      }
     } catch (e) {
       toast.error("Something went wrong. Please try again.");
     } finally {

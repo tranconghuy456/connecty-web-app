@@ -1,5 +1,6 @@
 // MODULES
 import React from "react";
+import { isObjectEmpty } from "../utils/checker";
 
 // Input field
 const Input = ({
@@ -13,6 +14,19 @@ const Input = ({
   register,
   value,
 }) => {
+  // const errorMessage = onError.map((error) => {
+  //   return error.element === "Username" ? error.message : null;
+  // });
+
+  const errorMessage = onError.map((error) => {
+    return (
+      <span className="text-red-500 text-sm mt-1">
+        <i className="ri-error-warning-line ri-lg mr-1 h-100"></i>
+        {error.element === "Username" ? error.message : null}
+      </span>
+    );
+  });
+
   return (
     <>
       {label && <label htmlFor={id}>{label}</label>}
@@ -21,7 +35,7 @@ const Input = ({
         className={`
     ${className} w-full p-2 block rounded-lg text-sm mb-1 text-slate-200 focus:outline hover:outline
         ${
-          onError[id]
+          !isObjectEmpty(errorMessage)
             ? "outline outline-red-800 bg-red-600/20"
             : "outline-2 outline-teal-600 bg-teal-400/20"
         }
@@ -30,12 +44,13 @@ const Input = ({
         {...register(id)}
         value={value}
       />
-      {onError[id] && (
+      {/* {!isObjectEmpty(errorMessage) && (
         <span className="text-red-500 text-sm mt-1">
           <i className="ri-error-warning-line ri-lg mr-1 h-100"></i>
-          {onError[id]["message"]}
+          {errorMessage}
         </span>
-      )}
+      )} */}
+      {errorMessage}
     </>
   );
 };
